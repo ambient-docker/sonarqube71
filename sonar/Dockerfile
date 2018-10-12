@@ -1,4 +1,4 @@
-FROM centos
+FROM openjdk:8
 
 MAINTAINER Herve Meftah <dockerlite@gmail.com>
 
@@ -9,15 +9,16 @@ ENV JAVA_OPTS="$JAVA_OPTS -Duser.country=GB -Duser.language=en -Duser.timezone=E
     # Database configuration \
     # Defaults to using H2 \
     SONARQUBE_JDBC_USERNAME=sonar \
-    SONARQUBE_JDBC_PASSWORD=sonar \
+    SONARQUBE_JDBC_PASSWORD=sonar
+
 
 
 #install Java OpenJDK
-RUN INSTALL_PKGS="java-1.8.0-openjdk.x86_64" && \
-    yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS && \
-    rpm -V $INSTALL_PKGS && \
-    yum clean all  && \
-    localedef -f UTF-8 -i en_US en_US.UTF-8
+#RUN INSTALL_PKGS="java-1.8.0-openjdk.x86_64" && \
+#    yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS && \
+#    rpm -V $INSTALL_PKGS && \
+#    yum clean all  && \
+#    localedef -f UTF-8 -i en_US en_US.UTF-8
 
 # Http port and H2 database port
 EXPOSE 9000 9092
@@ -53,11 +54,6 @@ RUN set -x \
     && chown -R sonarqube:sonarqube sonarqube \
     && rm sonarqube.zip* \
     && rm -rf $SONARQUBE_HOME/bin/*
-
-
-
-
-
 
 
 VOLUME ["$SONARQUBE_HOME/data","$SONARQUBE_HOME/conf","$SONARQUBE_HOME/logs"]
