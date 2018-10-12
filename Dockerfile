@@ -1,15 +1,26 @@
-FROM openjdk:8
+FROM centos
 
-ENV SONAR_VERSION=7.1 \
+MAINTAINER Herve Meftah <dockerlite@gmail.com>
+
+ENV JAVA_OPTS="$JAVA_OPTS -Duser.country=GB -Duser.language=en -Duser.timezone=Europe/London" \
+    JAVA_HOME=/usr/lib/jvm/java-1.8.0 \
+    SONAR_VERSION=7.1 \
     SONARQUBE_HOME=/opt/sonarqube \
-    # Database configuration
-    # Defaults to using H2
+    # Database configuration \
+    # Defaults to using H2 \
     SONARQUBE_JDBC_USERNAME=sonar \
     SONARQUBE_JDBC_PASSWORD=sonar \
-    SONARQUBE_JDBC_URL=
 
-# Http port
-EXPOSE 9000
+
+#install Java OpenJDK
+RUN INSTALL_PKGS="java-1.8.0-openjdk.x86_64" && \
+    yum -y --setopt=tsflags=nodocs install $INSTALL_PKGS && \
+    rpm -V $INSTALL_PKGS && \
+    yum clean all  && \
+    localedef -f UTF-8 -i en_US en_US.UTF-8
+
+# Http port and H2 database port
+EXPOSE 9000 9092
 
 RUN groupadd -r sonarqube && useradd -r -g sonarqube sonarqube
 
@@ -33,7 +44,6 @@ RUN set -x \
     # sub   2048R/06855C1D 2015-05-25
     && (gpg --keyserver ha.pool.sks-keyservers.net --recv-keys F1182E81C792928921DBCAB4CFCA4A29D26468DE \
 	    || gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys F1182E81C792928921DBCAB4CFCA4A29D26468DE) \
-
     && cd /opt \
     && curl -o sonarqube.zip -fSL https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONAR_VERSION.zip \
     && curl -o sonarqube.zip.asc -fSL https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONAR_VERSION.zip.asc \
@@ -44,7 +54,13 @@ RUN set -x \
     && rm sonarqube.zip* \
     && rm -rf $SONARQUBE_HOME/bin/*
 
-VOLUME "$SONARQUBE_HOME/data"
+
+
+
+
+
+
+VOLUME ["$SONARQUBE_HOME/data","$SONARQUBE_HOME/conf","$SONARQUBE_HOME/logs"]
 
 WORKDIR $SONARQUBE_HOME
 COPY run.sh $SONARQUBE_HOME/bin/
